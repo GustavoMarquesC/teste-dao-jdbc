@@ -56,29 +56,39 @@ public class SellerDaoJDBC implements SellerDao {
 			st.setInt(1, id);
 			rs = st.executeQuery(); //o rs vai receber o valor quando a pesquisa no banco for feita
 			if (rs.next()) { //como o rs inicia na posição 0, ele precisa verificar quando ele for valido
-				Department dep = new Department(); //dessa forma instancia um department
-				dep.setId(rs.getInt("DepartmentId")); //o department vai setar um id com o valor inteiro que receber no rs como 'DepartmentID' (valor inteiro)
-				dep.setName(rs.getString("DepName")); //o mesmo acontece com o nome, porém agora é uma string
-				Seller obj = new Seller();
-				obj.setId(rs.getInt("Id"));
-				obj.setName(rs.getString("Name"));
-				obj.setEmail(rs.getString("Email"));
-				obj.setBaseSalary(rs.getDouble("BaseSalary"));
-				obj.setBirthDate(rs.getDate("BirthDate"));
-				obj.setDepartment(dep);
-				return obj;
+				Department dep = instantiateDepartment(rs);
+				Seller obj = instantiateSeller(rs, dep);
+				return obj; 
 			}
-			return null;
+			return null; //o retorno do null é caso o rs.next() seja 0
 			
 		}
 		catch(SQLException e) {
-			throw new DbException(e.getMessage());
+			throw new DbException(e.getMessage()); //vai propagar o exception db
 		}
-		finally {
+		finally { //fechar o st e o rs
 			DB.closeStatement(st);
 			DB.closeResultSet(rs);
 		}
 
+	}
+
+	private Seller instantiateSeller(ResultSet rs, Department dep) throws SQLException{
+		Seller obj = new Seller(); 
+		obj.setId(rs.getInt("Id"));
+		obj.setName(rs.getString("Name"));
+		obj.setEmail(rs.getString("Email"));
+		obj.setBaseSalary(rs.getDouble("BaseSalary"));
+		obj.setBirthDate(rs.getDate("BirthDate"));
+		obj.setDepartment(dep);
+		return obj;
+	}
+
+	private Department instantiateDepartment(ResultSet rs) throws SQLException {
+		Department dep = new Department(); 
+		dep.setId(rs.getInt("DepartmentId")); 
+		dep.setName(rs.getString("DepName")); 
+		return dep;
 	}
 
 	@Override
